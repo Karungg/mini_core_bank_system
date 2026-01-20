@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RegisterRequest {
 
-    @NotBlank
+    @NotBlank(message = "{validation.username.required}")
     private String username;
-    @NotBlank
+    @NotBlank(message = "{validation.password.required}")
     private String password;
 }
