@@ -4,6 +4,7 @@ import com.miftah.mini_core_bank_system.security.JwtService;
 import com.miftah.mini_core_bank_system.user.Role;
 import com.miftah.mini_core_bank_system.user.User;
 import com.miftah.mini_core_bank_system.user.UserRepository;
+import com.miftah.mini_core_bank_system.user.UserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,18 +25,26 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
 
-    public RegisterRequest register(RegisterRequest request) {
+    public UserResponse register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
         }
-        var user = User.builder()
+        User user = User.builder()
                 .name(request.getName())
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
                 .build();
         userRepository.save(user);
-        return request; // In a real app, maybe return UserResponse without password
+
+        return UserResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .name(user.getName())
+                .role(user.getRole())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .build();
     }
 
     public TokenResponse login(LoginRequest request) {
@@ -43,9 +52,9 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(
                         request.getUsername(),
                         request.getPassword()));
-        // User is authenticated
+
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
-        var jwtToken = jwtService.generateToken(userDetails);
+        String jwtToken = jwtService.generateToken(userDetails);
         return TokenResponse.builder()
                 .token(jwtToken)
                 .build();
