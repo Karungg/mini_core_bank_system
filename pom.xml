@@ -126,19 +126,19 @@
 			<artifactId>testcontainers-postgresql</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>io.jsonwebtoken</groupId>
-			<artifactId>jjwt-api</artifactId>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
 			<version>0.13.0</version>
 			<scope>compile</scope>
-		</dependency>
-		<dependency>
+        </dependency>
+        <dependency>
 			<groupId>tools.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 			<version>3.0.3</version>
 			<scope>compile</scope>
-		</dependency>
-	</dependencies>
+        </dependency>
+    </dependencies>
 
 	<build>
 		<plugins>
