@@ -18,7 +18,6 @@ public class UserResponse {
 
     private UUID id;
     private String username;
-    private String name;
     private Role role;
     private Instant createdAt;
     private Instant updatedAt;

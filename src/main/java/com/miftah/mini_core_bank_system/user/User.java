@@ -37,19 +37,15 @@ public class User {
     private UUID id;
 
     @NotBlank
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, length = 100, nullable = false)
     private String username;
 
     @NotBlank
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String password;
 
-    @NotBlank
-    @Column(nullable = false)
-    private String name;
-
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private Role role;
 
     @CreatedDate
