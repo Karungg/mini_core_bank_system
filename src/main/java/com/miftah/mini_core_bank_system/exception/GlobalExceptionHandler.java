@@ -6,6 +6,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -75,5 +76,15 @@ public class GlobalExceptionHandler {
                                                 messageSource.getMessage("error.validation", null,
                                                                 LocaleContextHolder.getLocale()),
                                                 errorMessage));
+        }
+
+        @ExceptionHandler(BadCredentialsException.class)
+        public ResponseEntity<WebResponse<String>> badCredentialsException(
+                        BadCredentialsException exception) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                .body(WebResponse.error(HttpStatus.UNAUTHORIZED.value(),
+                                                messageSource.getMessage("error.bad-credentials", null,
+                                                                LocaleContextHolder.getLocale()),
+                                                exception.getMessage()));
         }
 }
