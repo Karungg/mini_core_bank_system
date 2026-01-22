@@ -149,4 +149,39 @@ public class UserControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void updateAdmin_Success_ShouldReturnOk() throws Exception {
+        User admin = userRepository
+                .save(User.builder().username("admin").password("password").role(Role.ADMIN).build());
+
+        UpdateUserRequest request = UpdateUserRequest.builder()
+                .username("newadminname")
+                .password("newpassword")
+                .build();
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .put("/api/users/admin/" + admin.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code", is(200)))
+                .andExpect(jsonPath("$.data.username", is("newadminname")));
+
+        User updatedUser = userRepository.findById(admin.getId()).orElseThrow();
+        assertTrue(updatedUser.getUsername().equals("newadminname"));
+    }
+
+    @Test
+    void deleteAdmin_Success_ShouldReturnOk() throws Exception {
+        User admin = userRepository
+                .save(User.builder().username("todelete").password("password").role(Role.ADMIN).build());
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .delete("/api/users/admin/" + admin.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code", is(200)));
+
+        assertTrue(userRepository.findById(admin.getId()).isEmpty());
+    }
 }

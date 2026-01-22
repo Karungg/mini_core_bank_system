@@ -5,9 +5,14 @@ import com.miftah.mini_core_bank_system.exception.DuplicateResourceException;
 import com.miftah.mini_core_bank_system.profile.ProfileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -58,6 +63,41 @@ public class UserServiceImpl implements UserService {
 
         log.info("User with profile created successfully: {}", user.getId());
         return toUserResponse(user);
+    }
+
+    @Override
+    @Transactional
+    public UserResponse updateAdmin(UUID id, UpdateUserRequest request) {
+        log.info("Updating admin user: {}", id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "User not found"));
+
+        if (userRepository.existsByUsernameAndIdNot(request.getUsername(), id)) {
+            log.warn("Username already exists: {}", request.getUsername());
+            throw new DuplicateResourceException("username", "error.username.duplicate");
+        }
+
+        user.setUsername(request.getUsername());
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        userRepository.save(user);
+        log.info("Admin user updated successfully: {}", user.getId());
+        return toUserResponse(user);
+    }
+
+    @Override
+    @Transactional
+    public void deleteAdmin(UUID id) {
+        log.info("Deleting admin user: {}", id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "User not found"));
+
+        userRepository.delete(user);
+        log.info("Admin user deleted successfully: {}", id);
     }
 
     private UserResponse toUserResponse(User user) {

@@ -122,4 +122,56 @@ class UserServiceTest {
         verify(userRepository, never()).save(any(User.class));
         verify(profileService, never()).create(any(User.class), any(ProfileRequest.class));
     }
+
+    @Test
+    void updateAdmin_Success() {
+        UUID userId = UUID.randomUUID();
+        User existingUser = User.builder().id(userId).username("olduser").role(Role.ADMIN).build();
+        UpdateUserRequest updateRequest = UpdateUserRequest.builder().username("newusername").password("newpassword")
+                .build();
+
+        when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(existingUser));
+        when(userRepository.existsByUsername(updateRequest.getUsername())).thenReturn(false);
+        when(passwordEncoder.encode(updateRequest.getPassword())).thenReturn("encodedNewPassword");
+        when(userRepository.save(existingUser)).thenReturn(existingUser);
+
+        UserResponse response = userService.updateAdmin(userId, updateRequest);
+
+        assertNotNull(response);
+        assertEquals(updateRequest.getUsername(), response.getUsername());
+        verify(userRepository).save(any(User.class));
+    }
+
+    @Test
+    void updateAdmin_UserNotFound_ThrowsException() {
+        UUID userId = UUID.randomUUID();
+        UpdateUserRequest updateRequest = UpdateUserRequest.builder().username("newusername").build();
+
+        when(userRepository.findById(userId)).thenReturn(java.util.Optional.empty());
+
+        assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                () -> userService.updateAdmin(userId, updateRequest));
+    }
+
+    @Test
+    void deleteAdmin_Success() {
+        UUID userId = UUID.randomUUID();
+        User existingUser = User.builder().id(userId).username("todelete").role(Role.ADMIN).build();
+
+        when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(existingUser));
+
+        userService.deleteAdmin(userId);
+
+        verify(userRepository).delete(existingUser);
+    }
+
+    @Test
+    void deleteAdmin_UserNotFound_ThrowsException() {
+        UUID userId = UUID.randomUUID();
+
+        when(userRepository.findById(userId)).thenReturn(java.util.Optional.empty());
+
+        assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                () -> userService.deleteAdmin(userId));
+    }
 }
