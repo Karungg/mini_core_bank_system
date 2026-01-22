@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,7 +24,7 @@ public class AuthController {
 
     private final MessageSource messageSource;
 
-    @PostMapping("/register")
+    @PostMapping(path = "/register", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<WebResponse<UserResponse>> register(
             @RequestBody @Valid RegisterRequest request) {
         UserResponse response = authService.register(request);
@@ -31,7 +32,7 @@ public class AuthController {
                 messageSource.getMessage("success.register", null, LocaleContextHolder.getLocale()), response));
     }
 
-    @PostMapping("/login")
+    @PostMapping(path = "/login", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<WebResponse<TokenResponse>> login(
             @RequestBody @Valid LoginRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(WebResponse.success(HttpStatus.OK.value(),
