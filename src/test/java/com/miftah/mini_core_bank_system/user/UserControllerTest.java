@@ -1,0 +1,152 @@
+package com.miftah.mini_core_bank_system.user;
+
+import com.miftah.mini_core_bank_system.TestcontainersConfiguration;
+import com.miftah.mini_core_bank_system.auth.RegisterRequest;
+import com.miftah.mini_core_bank_system.profile.Gender;
+import com.miftah.mini_core_bank_system.profile.ProfileRequest;
+import com.miftah.mini_core_bank_system.profile.ProfileType;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.LocalDate;
+
+import tools.jackson.databind.ObjectMapper;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@Import(TestcontainersConfiguration.class)
+@ActiveProfiles("test")
+@WithMockUser(username = "admin", password = "password", roles = "ADMIN")
+public class UserControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @BeforeEach
+    void setUp() {
+        userRepository.deleteAll();
+    }
+
+    @Test
+    void createAdmin_Success_ShouldReturnCreated() throws Exception {
+        RegisterRequest request = RegisterRequest.builder()
+                .username("admin")
+                .password("password")
+                .build();
+
+        mockMvc.perform(post("/api/users/admin")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.code", is(201)))
+                .andExpect(jsonPath("$.data.username", is("admin")))
+                .andExpect(jsonPath("$.data.role", is("ADMIN")));
+
+        assertTrue(userRepository.existsByUsername("admin"));
+    }
+
+    @Test
+    void createAdmin_DuplicateUsername_ShouldReturnBadRequest() throws Exception {
+        RegisterRequest request = RegisterRequest.builder()
+                .username("admin")
+                .password("password")
+                .build();
+
+        userRepository.save(User.builder().username("admin").password("pwd").role(Role.ADMIN).build());
+
+        mockMvc.perform(post("/api/users/admin")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createUserWithProfile_Success_ShouldReturnCreated() throws Exception {
+        ProfileRequest profileRequest = ProfileRequest.builder()
+                .type(ProfileType.KTP)
+                .expiryDate(LocalDate.of(2026, 1, 1))
+                .identityNumber("1234567890123456")
+                .name("John Doe")
+                .country("Indonesia")
+                .placeOfBirth("Jakarta")
+                .dateOfBirth(LocalDate.of(1990, 1, 1))
+                .gender(Gender.MALE)
+                .phone("08123456789")
+                .nationality("Indonesia")
+                .build();
+
+        RegisterRequest userRequest = RegisterRequest.builder()
+                .username("newuser")
+                .password("password")
+                .build();
+
+        CreateUserWithProfileRequest request = CreateUserWithProfileRequest.builder()
+                .user(userRequest)
+                .profile(profileRequest)
+                .build();
+
+        mockMvc.perform(post("/api/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.code", is(201)))
+                .andExpect(jsonPath("$.data.username", is("newuser")))
+                .andExpect(jsonPath("$.data.role", is("USER")));
+
+        assertTrue(userRepository.existsByUsername("newuser"));
+    }
+
+    @Test
+    void createUserWithProfile_DuplicateUsername_ShouldReturnBadRequest() throws Exception {
+        ProfileRequest profileRequest = ProfileRequest.builder()
+                .type(ProfileType.KTP)
+                .expiryDate(LocalDate.of(2026, 1, 1))
+                .identityNumber("1234567890123456")
+                .name("John Doe")
+                .country("Indonesia")
+                .placeOfBirth("Jakarta")
+                .dateOfBirth(LocalDate.of(1990, 1, 1))
+                .gender(Gender.MALE)
+                .phone("08123456789")
+                .nationality("Indonesia")
+                .build();
+
+        // Create duplicate user manually
+        userRepository.save(User.builder().username("newuser").password("pwd").role(Role.USER).build());
+
+        RegisterRequest userRequest = RegisterRequest.builder()
+                .username("newuser")
+                .password("password")
+                .build();
+
+        CreateUserWithProfileRequest request = CreateUserWithProfileRequest.builder()
+                .user(userRequest)
+                .profile(profileRequest)
+                .build();
+
+        mockMvc.perform(post("/api/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+}
