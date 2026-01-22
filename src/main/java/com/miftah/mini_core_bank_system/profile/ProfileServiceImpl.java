@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -27,12 +29,18 @@ public class ProfileServiceImpl implements ProfileService {
             throw new DuplicateResourceException("user", "User already has a profile");
         }
 
+        Map<String, String> errors = new HashMap<>();
+
         if (profileRepository.existsByIdentityNumber(request.getIdentityNumber())) {
-            throw new DuplicateResourceException("identityNumber", "Identity number already exists");
+            errors.put("identityNumber", "error.profile.identityNumber.duplicate");
         }
 
         if (profileRepository.existsByPhone(request.getPhone())) {
-            throw new DuplicateResourceException("phone", "Phone number already exists");
+            errors.put("phone", "error.profile.phone.duplicate");
+        }
+
+        if (!errors.isEmpty()) {
+            throw new DuplicateResourceException(errors);
         }
 
         Profile profile = Profile.builder()
@@ -82,16 +90,18 @@ public class ProfileServiceImpl implements ProfileService {
         Profile profile = profileRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found"));
 
-        // Check if identity number is changing and if it conflicts
-        if (!Objects.equals(profile.getIdentityNumber(), request.getIdentityNumber()) &&
-                profileRepository.existsByIdentityNumber(request.getIdentityNumber())) {
-            throw new DuplicateResourceException("identityNumber", "Identity number already exists");
+        Map<String, String> errors = new HashMap<>();
+
+        if (profileRepository.existsByIdentityNumberAndIdNot(request.getIdentityNumber(), profile.getId())) {
+            errors.put("identityNumber", "error.profile.identityNumber.duplicate");
         }
 
-        // Check if phone is changing and if it conflicts
-        if (!Objects.equals(profile.getPhone(), request.getPhone()) &&
-                profileRepository.existsByPhone(request.getPhone())) {
-            throw new DuplicateResourceException("phone", "Phone number already exists");
+        if (profileRepository.existsByPhoneAndIdNot(request.getPhone(), profile.getId())) {
+            errors.put("phone", "error.profile.phone.duplicate");
+        }
+
+        if (!errors.isEmpty()) {
+            throw new DuplicateResourceException(errors);
         }
 
         profile.setType(request.getType());
@@ -120,16 +130,6 @@ public class ProfileServiceImpl implements ProfileService {
         log.info("Profile updated successfully for user: {}", user.getUsername());
 
         return toProfileResponse(profile);
-    }
-
-    @Override
-    @Transactional
-    public void delete(User user) {
-        log.info("Deleting profile for user: {}", user.getUsername());
-        Profile profile = profileRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found"));
-        profileRepository.delete(profile);
-        log.info("Profile deleted successfully for user: {}", user.getUsername());
     }
 
     private ProfileResponse toProfileResponse(Profile profile) {

@@ -13,4 +13,8 @@ public interface ProfileRepository extends JpaRepository<Profile, UUID> {
     boolean existsByIdentityNumber(String identityNumber);
 
     boolean existsByPhone(String phone);
+
+    boolean existsByIdentityNumberAndIdNot(String identityNumber, UUID id);
+
+    boolean existsByPhoneAndIdNot(String phone, UUID id);
 }

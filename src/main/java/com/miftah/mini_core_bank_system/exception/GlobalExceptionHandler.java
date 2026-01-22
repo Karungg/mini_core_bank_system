@@ -67,9 +67,18 @@ public class GlobalExceptionHandler {
 
         @ExceptionHandler(DuplicateResourceException.class)
         public ResponseEntity<WebResponse<String>> duplicateResourceException(DuplicateResourceException exception) {
-                String errorMessage = exception.getField() + ": " +
-                                messageSource.getMessage(exception.getMessageKey(), null,
-                                                LocaleContextHolder.getLocale());
+                String errorMessage;
+                if (exception.getErrors() != null && !exception.getErrors().isEmpty()) {
+                        errorMessage = exception.getErrors().entrySet().stream()
+                                        .map(entry -> entry.getKey() + ": " +
+                                                        messageSource.getMessage(entry.getValue(), null,
+                                                                        LocaleContextHolder.getLocale()))
+                                        .collect(Collectors.joining(", "));
+                } else {
+                        errorMessage = exception.getField() + ": " +
+                                        messageSource.getMessage(exception.getMessageKey(), null,
+                                                        LocaleContextHolder.getLocale());
+                }
 
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                                 .body(WebResponse.error(HttpStatus.BAD_REQUEST.value(),

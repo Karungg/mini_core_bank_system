@@ -8,6 +8,4 @@ public interface ProfileService {
     ProfileResponse get(User user);
 
     ProfileResponse update(User user, ProfileRequest request);
-
-    void delete(User user);
 }
