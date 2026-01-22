@@ -6,6 +6,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -66,14 +67,33 @@ public class GlobalExceptionHandler {
 
         @ExceptionHandler(DuplicateResourceException.class)
         public ResponseEntity<WebResponse<String>> duplicateResourceException(DuplicateResourceException exception) {
-                String errorMessage = exception.getField() + ": " +
-                                messageSource.getMessage(exception.getMessageKey(), null,
-                                                LocaleContextHolder.getLocale());
+                String errorMessage;
+                if (exception.getErrors() != null && !exception.getErrors().isEmpty()) {
+                        errorMessage = exception.getErrors().entrySet().stream()
+                                        .map(entry -> entry.getKey() + ": " +
+                                                        messageSource.getMessage(entry.getValue(), null,
+                                                                        LocaleContextHolder.getLocale()))
+                                        .collect(Collectors.joining(", "));
+                } else {
+                        errorMessage = exception.getField() + ": " +
+                                        messageSource.getMessage(exception.getMessageKey(), null,
+                                                        LocaleContextHolder.getLocale());
+                }
 
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                                 .body(WebResponse.error(HttpStatus.BAD_REQUEST.value(),
                                                 messageSource.getMessage("error.validation", null,
                                                                 LocaleContextHolder.getLocale()),
                                                 errorMessage));
+        }
+
+        @ExceptionHandler(BadCredentialsException.class)
+        public ResponseEntity<WebResponse<String>> badCredentialsException(
+                        BadCredentialsException exception) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                .body(WebResponse.error(HttpStatus.UNAUTHORIZED.value(),
+                                                messageSource.getMessage("error.bad-credentials", null,
+                                                                LocaleContextHolder.getLocale()),
+                                                exception.getMessage()));
         }
 }
