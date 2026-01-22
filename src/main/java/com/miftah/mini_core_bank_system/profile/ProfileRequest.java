@@ -56,23 +56,33 @@ public class ProfileRequest {
 
     private MaritalStatus maritalStatus;
 
+    @Size(max = 100, message = "{validation.profile.religion.size}")
     private String religion;
 
+    @Size(max = 1024, message = "{validation.profile.address.size}")
     private String address;
 
+    @Size(max = 255, message = "{validation.profile.building.size}")
     private String building;
 
+    @Size(max = 4, message = "{validation.profile.rt.size}")
     private String rt;
 
+    @Size(max = 4, message = "{validation.profile.rw.size}")
     private String rw;
 
+    @Size(max = 100, message = "{validation.profile.province.size}")
     private String province;
 
+    @Size(max = 100, message = "{validation.profile.occupation.size}")
     private String occupation;
 
+    @Size(max = 100, message = "{validation.profile.officeName.size}")
     private String officeName;
 
+    @Size(max = 1024, message = "{validation.profile.officeAddress.size}")
     private String officeAddress;
 
+    @Size(max = 20, message = "{validation.profile.officePhone.size}")
     private String officePhone;
 }
