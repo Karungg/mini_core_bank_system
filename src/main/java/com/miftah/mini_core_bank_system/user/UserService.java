@@ -3,7 +3,14 @@ package com.miftah.mini_core_bank_system.user;
 import com.miftah.mini_core_bank_system.auth.RegisterRequest;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 public interface UserService {
+
+    Page<UserResponse> getAll(Pageable pageable);
+
+    UserResponse getById(UUID id);
 
     UserResponse createAdmin(RegisterRequest request);
 

@@ -8,6 +8,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -161,5 +165,41 @@ class ProfileServiceTest {
         assertNotNull(exception.getErrors());
         assertTrue(exception.getErrors().containsKey("identityNumber"));
         assertTrue(exception.getErrors().containsKey("phone"));
+    }
+
+    @Test
+    void getAll_Success() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Profile> page = new PageImpl<>(
+                java.util.List.of(profile));
+
+        when(profileRepository.findAll(pageable)).thenReturn(page);
+
+        Page<ProfileResponse> response = profileService.getAll(pageable);
+
+        assertNotNull(response);
+        assertEquals(1, response.getTotalElements());
+        assertEquals(profile.getIdentityNumber(), response.getContent().get(0).getIdentityNumber());
+    }
+
+    @Test
+    void getById_Success() {
+        UUID profileId = UUID.randomUUID();
+        profile.setId(profileId);
+
+        when(profileRepository.findById(profileId)).thenReturn(Optional.of(profile));
+
+        ProfileResponse response = profileService.getById(profileId);
+
+        assertNotNull(response);
+        assertEquals(profile.getIdentityNumber(), response.getIdentityNumber());
+    }
+
+    @Test
+    void getById_NotFound_ThrowsException() {
+        UUID profileId = UUID.randomUUID();
+        when(profileRepository.findById(profileId)).thenReturn(Optional.empty());
+
+        assertThrows(ResponseStatusException.class, () -> profileService.getById(profileId));
     }
 }

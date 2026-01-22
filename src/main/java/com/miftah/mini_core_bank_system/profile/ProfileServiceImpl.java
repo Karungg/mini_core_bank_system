@@ -4,6 +4,8 @@ import com.miftah.mini_core_bank_system.exception.DuplicateResourceException;
 import com.miftah.mini_core_bank_system.user.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -160,5 +163,20 @@ public class ProfileServiceImpl implements ProfileService {
                 .createdAt(profile.getCreatedAt())
                 .updatedAt(profile.getUpdatedAt())
                 .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProfileResponse> getAll(Pageable pageable) {
+        return profileRepository.findAll(pageable)
+                .map(this::toProfileResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProfileResponse getById(UUID id) {
+        Profile profile = profileRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found"));
+        return toProfileResponse(profile);
     }
 }

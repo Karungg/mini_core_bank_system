@@ -20,9 +20,13 @@ import java.time.LocalDate;
 
 import tools.jackson.databind.ObjectMapper;
 
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -33,155 +37,180 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WithMockUser(username = "admin", password = "password", roles = "ADMIN")
 public class UserControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @Autowired
-    private UserRepository userRepository;
+        @Autowired
+        private UserRepository userRepository;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+        @Autowired
+        private ObjectMapper objectMapper;
 
-    @BeforeEach
-    void setUp() {
-        userRepository.deleteAll();
-    }
+        @BeforeEach
+        void setUp() {
+                userRepository.deleteAll();
+        }
 
-    @Test
-    void createAdmin_Success_ShouldReturnCreated() throws Exception {
-        RegisterRequest request = RegisterRequest.builder()
-                .username("admin")
-                .password("password")
-                .build();
+        @Test
+        void createAdmin_Success_ShouldReturnCreated() throws Exception {
+                RegisterRequest request = RegisterRequest.builder()
+                                .username("admin")
+                                .password("password")
+                                .build();
 
-        mockMvc.perform(post("/api/users/admin")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.code", is(201)))
-                .andExpect(jsonPath("$.data.username", is("admin")))
-                .andExpect(jsonPath("$.data.role", is("ADMIN")));
+                mockMvc.perform(post("/api/users/admin")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.code", is(201)))
+                                .andExpect(jsonPath("$.data.username", is("admin")))
+                                .andExpect(jsonPath("$.data.role", is("ADMIN")));
 
-        assertTrue(userRepository.existsByUsername("admin"));
-    }
+                assertTrue(userRepository.existsByUsername("admin"));
+        }
 
-    @Test
-    void createAdmin_DuplicateUsername_ShouldReturnBadRequest() throws Exception {
-        RegisterRequest request = RegisterRequest.builder()
-                .username("admin")
-                .password("password")
-                .build();
+        @Test
+        void createAdmin_DuplicateUsername_ShouldReturnBadRequest() throws Exception {
+                RegisterRequest request = RegisterRequest.builder()
+                                .username("admin")
+                                .password("password")
+                                .build();
 
-        userRepository.save(User.builder().username("admin").password("pwd").role(Role.ADMIN).build());
+                userRepository.save(User.builder().username("admin").password("pwd").role(Role.ADMIN).build());
 
-        mockMvc.perform(post("/api/users/admin")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
-    }
+                mockMvc.perform(post("/api/users/admin")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isBadRequest());
+        }
 
-    @Test
-    void createUserWithProfile_Success_ShouldReturnCreated() throws Exception {
-        ProfileRequest profileRequest = ProfileRequest.builder()
-                .type(ProfileType.KTP)
-                .expiryDate(LocalDate.of(2026, 1, 1))
-                .identityNumber("1234567890123456")
-                .name("John Doe")
-                .country("Indonesia")
-                .placeOfBirth("Jakarta")
-                .dateOfBirth(LocalDate.of(1990, 1, 1))
-                .gender(Gender.MALE)
-                .phone("08123456789")
-                .nationality("Indonesia")
-                .build();
+        @Test
+        void createUserWithProfile_Success_ShouldReturnCreated() throws Exception {
+                ProfileRequest profileRequest = ProfileRequest.builder()
+                                .type(ProfileType.KTP)
+                                .expiryDate(LocalDate.of(2026, 1, 1))
+                                .identityNumber("1234567890123456")
+                                .name("John Doe")
+                                .country("Indonesia")
+                                .placeOfBirth("Jakarta")
+                                .dateOfBirth(LocalDate.of(1990, 1, 1))
+                                .gender(Gender.MALE)
+                                .phone("08123456789")
+                                .nationality("Indonesia")
+                                .build();
 
-        RegisterRequest userRequest = RegisterRequest.builder()
-                .username("newuser")
-                .password("password")
-                .build();
+                RegisterRequest userRequest = RegisterRequest.builder()
+                                .username("newuser")
+                                .password("password")
+                                .build();
 
-        CreateUserWithProfileRequest request = CreateUserWithProfileRequest.builder()
-                .user(userRequest)
-                .profile(profileRequest)
-                .build();
+                CreateUserWithProfileRequest request = CreateUserWithProfileRequest.builder()
+                                .user(userRequest)
+                                .profile(profileRequest)
+                                .build();
 
-        mockMvc.perform(post("/api/users")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.code", is(201)))
-                .andExpect(jsonPath("$.data.username", is("newuser")))
-                .andExpect(jsonPath("$.data.role", is("USER")));
+                mockMvc.perform(post("/api/users")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.code", is(201)))
+                                .andExpect(jsonPath("$.data.username", is("newuser")))
+                                .andExpect(jsonPath("$.data.role", is("USER")));
 
-        assertTrue(userRepository.existsByUsername("newuser"));
-    }
+                assertTrue(userRepository.existsByUsername("newuser"));
+        }
 
-    @Test
-    void createUserWithProfile_DuplicateUsername_ShouldReturnBadRequest() throws Exception {
-        ProfileRequest profileRequest = ProfileRequest.builder()
-                .type(ProfileType.KTP)
-                .expiryDate(LocalDate.of(2026, 1, 1))
-                .identityNumber("1234567890123456")
-                .name("John Doe")
-                .country("Indonesia")
-                .placeOfBirth("Jakarta")
-                .dateOfBirth(LocalDate.of(1990, 1, 1))
-                .gender(Gender.MALE)
-                .phone("08123456789")
-                .nationality("Indonesia")
-                .build();
+        @Test
+        void createUserWithProfile_DuplicateUsername_ShouldReturnBadRequest() throws Exception {
+                ProfileRequest profileRequest = ProfileRequest.builder()
+                                .type(ProfileType.KTP)
+                                .expiryDate(LocalDate.of(2026, 1, 1))
+                                .identityNumber("1234567890123456")
+                                .name("John Doe")
+                                .country("Indonesia")
+                                .placeOfBirth("Jakarta")
+                                .dateOfBirth(LocalDate.of(1990, 1, 1))
+                                .gender(Gender.MALE)
+                                .phone("08123456789")
+                                .nationality("Indonesia")
+                                .build();
 
-        // Create duplicate user manually
-        userRepository.save(User.builder().username("newuser").password("pwd").role(Role.USER).build());
+                // Create duplicate user manually
+                userRepository.save(User.builder().username("newuser").password("pwd").role(Role.USER).build());
 
-        RegisterRequest userRequest = RegisterRequest.builder()
-                .username("newuser")
-                .password("password")
-                .build();
+                RegisterRequest userRequest = RegisterRequest.builder()
+                                .username("newuser")
+                                .password("password")
+                                .build();
 
-        CreateUserWithProfileRequest request = CreateUserWithProfileRequest.builder()
-                .user(userRequest)
-                .profile(profileRequest)
-                .build();
+                CreateUserWithProfileRequest request = CreateUserWithProfileRequest.builder()
+                                .user(userRequest)
+                                .profile(profileRequest)
+                                .build();
 
-        mockMvc.perform(post("/api/users")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
-    }
+                mockMvc.perform(post("/api/users")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isBadRequest());
+        }
 
-    @Test
-    void updateAdmin_Success_ShouldReturnOk() throws Exception {
-        User admin = userRepository
-                .save(User.builder().username("admin").password("password").role(Role.ADMIN).build());
+        @Test
+        void updateAdmin_Success_ShouldReturnOk() throws Exception {
+                User admin = userRepository
+                                .save(User.builder().username("admin").password("password").role(Role.ADMIN).build());
 
-        UpdateUserRequest request = UpdateUserRequest.builder()
-                .username("newadminname")
-                .password("newpassword")
-                .build();
+                UpdateUserRequest request = UpdateUserRequest.builder()
+                                .username("newadminname")
+                                .password("newpassword")
+                                .build();
 
-        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                .put("/api/users/admin/" + admin.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code", is(200)))
-                .andExpect(jsonPath("$.data.username", is("newadminname")));
+                mockMvc.perform(put("/api/users/admin/" + admin.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.code", is(200)))
+                                .andExpect(jsonPath("$.data.username", is("newadminname")));
 
-        User updatedUser = userRepository.findById(admin.getId()).orElseThrow();
-        assertTrue(updatedUser.getUsername().equals("newadminname"));
-    }
+                User updatedUser = userRepository.findById(admin.getId()).orElseThrow();
+                assertTrue(updatedUser.getUsername().equals("newadminname"));
+        }
 
-    @Test
-    void deleteAdmin_Success_ShouldReturnOk() throws Exception {
-        User admin = userRepository
-                .save(User.builder().username("todelete").password("password").role(Role.ADMIN).build());
+        @Test
+        void deleteAdmin_Success_ShouldReturnOk() throws Exception {
+                User admin = userRepository
+                                .save(User.builder().username("todelete").password("password").role(Role.ADMIN)
+                                                .build());
 
-        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                .delete("/api/users/admin/" + admin.getId()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code", is(200)));
+                mockMvc.perform(delete("/api/users/admin/" + admin.getId()))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.code", is(200)));
 
-        assertTrue(userRepository.findById(admin.getId()).isEmpty());
-    }
+                assertTrue(userRepository.findById(admin.getId()).isEmpty());
+        }
+
+        @Test
+        void getAll_Success_ShouldReturnOk() throws Exception {
+                userRepository.save(User.builder().username("user1").password("pwd").role(Role.USER).build());
+                userRepository.save(User.builder().username("user2").password("pwd").role(Role.USER).build());
+
+                mockMvc.perform(get("/api/users")
+                                .param("page", "0")
+                                .param("size", "10"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.code", is(200)))
+                                .andExpect(jsonPath("$.data.content").isArray())
+                                .andExpect(jsonPath("$.data.totalElements")
+                                                .value(greaterThanOrEqualTo(2)));
+        }
+
+        @Test
+        void getById_Success_ShouldReturnOk() throws Exception {
+                User user = userRepository
+                                .save(User.builder().username("targetuser").password("pwd").role(Role.USER).build());
+
+                mockMvc.perform(get("/api/users/" + user.getId()))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.code", is(200)))
+                                .andExpect(jsonPath("$.data.username", is("targetuser")));
+        }
 }
