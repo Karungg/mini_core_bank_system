@@ -6,6 +6,8 @@ import com.miftah.mini_core_bank_system.profile.ProfileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -98,6 +100,22 @@ public class UserServiceImpl implements UserService {
 
         userRepository.delete(user);
         log.info("Admin user deleted successfully: {}", id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<UserResponse> getAll(Pageable pageable) {
+        return userRepository.findAll(pageable)
+                .map(this::toUserResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponse getById(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "User not found"));
+        return toUserResponse(user);
     }
 
     private UserResponse toUserResponse(User user) {

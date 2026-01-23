@@ -11,7 +11,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -130,9 +138,7 @@ class UserServiceTest {
         UpdateUserRequest updateRequest = UpdateUserRequest.builder().username("newusername").password("newpassword")
                 .build();
 
-        when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(existingUser));
-        when(userRepository.existsByUsername(updateRequest.getUsername())).thenReturn(false);
-        when(passwordEncoder.encode(updateRequest.getPassword())).thenReturn("encodedNewPassword");
+        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
         when(userRepository.save(existingUser)).thenReturn(existingUser);
 
         UserResponse response = userService.updateAdmin(userId, updateRequest);
@@ -147,9 +153,9 @@ class UserServiceTest {
         UUID userId = UUID.randomUUID();
         UpdateUserRequest updateRequest = UpdateUserRequest.builder().username("newusername").build();
 
-        when(userRepository.findById(userId)).thenReturn(java.util.Optional.empty());
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        assertThrows(org.springframework.web.server.ResponseStatusException.class,
+        assertThrows(ResponseStatusException.class,
                 () -> userService.updateAdmin(userId, updateRequest));
     }
 
@@ -158,7 +164,7 @@ class UserServiceTest {
         UUID userId = UUID.randomUUID();
         User existingUser = User.builder().id(userId).username("todelete").role(Role.ADMIN).build();
 
-        when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(existingUser));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
 
         userService.deleteAdmin(userId);
 
@@ -169,9 +175,48 @@ class UserServiceTest {
     void deleteAdmin_UserNotFound_ThrowsException() {
         UUID userId = UUID.randomUUID();
 
-        when(userRepository.findById(userId)).thenReturn(java.util.Optional.empty());
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        assertThrows(org.springframework.web.server.ResponseStatusException.class,
+        assertThrows(ResponseStatusException.class,
                 () -> userService.deleteAdmin(userId));
+        assertThrows(ResponseStatusException.class,
+                () -> userService.deleteAdmin(userId));
+    }
+
+    @Test
+    void getAll_Success() {
+        Pageable pageable = PageRequest.of(0, 10);
+        User user = User.builder().id(UUID.randomUUID()).username("user").role(Role.USER).build();
+        Page<User> page = new PageImpl<>(
+                List.of(user));
+
+        when(userRepository.findAll(pageable)).thenReturn(page);
+
+        Page<UserResponse> response = userService.getAll(pageable);
+
+        assertNotNull(response);
+        assertEquals(1, response.getTotalElements());
+        assertEquals("user", response.getContent().get(0).getUsername());
+    }
+
+    @Test
+    void getById_Success() {
+        UUID userId = UUID.randomUUID();
+        User user = User.builder().id(userId).username("user").role(Role.USER).build();
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        UserResponse response = userService.getById(userId);
+
+        assertNotNull(response);
+        assertEquals("user", response.getUsername());
+    }
+
+    @Test
+    void getById_NotFound_ThrowsException() {
+        UUID userId = UUID.randomUUID();
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThrows(ResponseStatusException.class, () -> userService.getById(userId));
     }
 }
