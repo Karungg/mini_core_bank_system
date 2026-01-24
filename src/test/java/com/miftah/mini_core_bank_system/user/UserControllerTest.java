@@ -1,8 +1,10 @@
 package com.miftah.mini_core_bank_system.user;
 
 import com.miftah.mini_core_bank_system.TestcontainersConfiguration;
+import com.miftah.mini_core_bank_system.account.AccountRepository;
 import com.miftah.mini_core_bank_system.auth.RegisterRequest;
 import com.miftah.mini_core_bank_system.profile.Gender;
+import com.miftah.mini_core_bank_system.profile.ProfileRepository;
 import com.miftah.mini_core_bank_system.profile.ProfileRequest;
 import com.miftah.mini_core_bank_system.profile.ProfileType;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,10 +46,18 @@ public class UserControllerTest {
         private UserRepository userRepository;
 
         @Autowired
+        private AccountRepository accountRepository;
+
+        @Autowired
+        private ProfileRepository profileRepository;
+
+        @Autowired
         private ObjectMapper objectMapper;
 
         @BeforeEach
         void setUp() {
+                accountRepository.deleteAll();
+                profileRepository.deleteAll();
                 userRepository.deleteAll();
         }
 
