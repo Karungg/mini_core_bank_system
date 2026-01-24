@@ -1,6 +1,8 @@
 package com.miftah.mini_core_bank_system.auth;
 
 import com.miftah.mini_core_bank_system.TestcontainersConfiguration;
+import com.miftah.mini_core_bank_system.account.AccountRepository;
+import com.miftah.mini_core_bank_system.profile.ProfileRepository;
 import com.miftah.mini_core_bank_system.user.UserRepository;
 
 import tools.jackson.databind.ObjectMapper;
@@ -32,10 +34,18 @@ class AuthControllerTest {
         private UserRepository userRepository;
 
         @Autowired
+        private AccountRepository accountRepository;
+
+        @Autowired
+        private ProfileRepository profileRepository;
+
+        @Autowired
         private ObjectMapper objectMapper;
 
         @BeforeEach
         void setUp() {
+                accountRepository.deleteAll();
+                profileRepository.deleteAll();
                 userRepository.deleteAll();
         }
 

@@ -1,4 +1,4 @@
-package com.miftah.mini_core_bank_system.security;
+package com.miftah.mini_core_bank_system.config;
 
 import com.miftah.mini_core_bank_system.user.UserRepository;
 import lombok.RequiredArgsConstructor;

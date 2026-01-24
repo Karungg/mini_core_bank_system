@@ -1,6 +1,7 @@
 package com.miftah.mini_core_bank_system.profile;
 
 import com.miftah.mini_core_bank_system.TestcontainersConfiguration;
+import com.miftah.mini_core_bank_system.account.AccountRepository;
 import com.miftah.mini_core_bank_system.auth.AuthService;
 import com.miftah.mini_core_bank_system.auth.RegisterRequest;
 import com.miftah.mini_core_bank_system.auth.TokenResponse;
@@ -42,6 +43,9 @@ public class ProfileControllerTest {
         private ProfileRepository profileRepository;
 
         @Autowired
+        private AccountRepository accountRepository;
+
+        @Autowired
         private AuthService authService;
 
         @Autowired
@@ -51,6 +55,7 @@ public class ProfileControllerTest {
 
         @BeforeEach
         void setUp() {
+                accountRepository.deleteAll();
                 profileRepository.deleteAll();
                 userRepository.deleteAll();
 
