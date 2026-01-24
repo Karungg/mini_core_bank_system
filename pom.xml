@@ -205,6 +205,17 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.flywaydb</groupId>
+				<artifactId>flyway-maven-plugin</artifactId>
+				<version>11.20.2</version>
+				<configuration>
+					<user>root</user>
+					<password>password</password>
+					<url>jdbc:postgresql://localhost:5432/mini_core_bank_system</url>
+					<cleanDisabled>false</cleanDisabled>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
