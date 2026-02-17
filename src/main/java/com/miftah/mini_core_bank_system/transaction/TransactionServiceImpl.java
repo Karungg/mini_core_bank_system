@@ -41,6 +41,11 @@ public class TransactionServiceImpl implements TransactionService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.transaction.unauthorized");
         }
 
+        if (fromAccount.getUser().getId().equals(toAccount.getUser().getId())) {
+            log.warn("Cannot transaction with same account");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.transaction.sameAccount");
+        }
+
         // Check balance
         if (fromAccount.getBalance().compareTo(request.getAmount()) < 0) {
             log.warn("Insufficient balance for account: {}", fromAccount.getAccountNumber());
