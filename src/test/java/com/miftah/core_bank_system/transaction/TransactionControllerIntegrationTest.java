@@ -119,13 +119,17 @@ public class TransactionControllerIntegrationTest {
                 accountRepository.save(account2);
         }
 
-        @Test
-        void createTransaction_Success() throws Exception {
-                TransactionRequest request = TransactionRequest.builder()
+        private TransactionRequest createValidTransactionRequest() {
+                return TransactionRequest.builder()
                                 .fromAccountId(account1.getId())
                                 .toAccountId(account2.getId())
                                 .amount(new BigDecimal("100"))
                                 .build();
+        }
+
+        @Test
+        void createTransaction_Success() throws Exception {
+                TransactionRequest request = createValidTransactionRequest();
 
                 mockMvc.perform(post("/api/transactions")
                                 .header("Authorization", "Bearer " + token1)
@@ -141,11 +145,7 @@ public class TransactionControllerIntegrationTest {
 
         @Test
         void createTransaction_Unauthorized_NoToken() throws Exception {
-                TransactionRequest request = TransactionRequest.builder()
-                                .fromAccountId(account1.getId())
-                                .toAccountId(account2.getId())
-                                .amount(new BigDecimal("100"))
-                                .build();
+                TransactionRequest request = createValidTransactionRequest();
 
                 mockMvc.perform(post("/api/transactions")
                                 .contentType(MediaType.APPLICATION_JSON)

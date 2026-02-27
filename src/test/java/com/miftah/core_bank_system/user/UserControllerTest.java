@@ -70,6 +70,21 @@ public class UserControllerTest {
                 userRepository.deleteAll();
         }
 
+        private ProfileRequest createValidProfileRequest() {
+                return ProfileRequest.builder()
+                                .type(ProfileType.KTP)
+                                .expiryDate(LocalDate.of(2026, 1, 1))
+                                .identityNumber("1234567890123456")
+                                .name("John Doe")
+                                .country("Indonesia")
+                                .placeOfBirth("Jakarta")
+                                .dateOfBirth(LocalDate.of(1990, 1, 1))
+                                .gender(Gender.MALE)
+                                .phone("08123456789")
+                                .nationality("Indonesia")
+                                .build();
+        }
+
         @Test
         void createAdmin_Success_ShouldReturnCreated() throws Exception {
                 RegisterRequest request = RegisterRequest.builder()
@@ -106,18 +121,7 @@ public class UserControllerTest {
 
         @Test
         void createUserWithProfile_Success_ShouldReturnCreated() throws Exception {
-                ProfileRequest profileRequest = ProfileRequest.builder()
-                                .type(ProfileType.KTP)
-                                .expiryDate(LocalDate.of(2026, 1, 1))
-                                .identityNumber("1234567890123456")
-                                .name("John Doe")
-                                .country("Indonesia")
-                                .placeOfBirth("Jakarta")
-                                .dateOfBirth(LocalDate.of(1990, 1, 1))
-                                .gender(Gender.MALE)
-                                .phone("08123456789")
-                                .nationality("Indonesia")
-                                .build();
+                ProfileRequest profileRequest = createValidProfileRequest();
 
                 RegisterRequest userRequest = RegisterRequest.builder()
                                 .username("newuser")
@@ -143,18 +147,7 @@ public class UserControllerTest {
 
         @Test
         void createUserWithProfile_DuplicateUsername_ShouldReturnBadRequest() throws Exception {
-                ProfileRequest profileRequest = ProfileRequest.builder()
-                                .type(ProfileType.KTP)
-                                .expiryDate(LocalDate.of(2026, 1, 1))
-                                .identityNumber("1234567890123456")
-                                .name("John Doe")
-                                .country("Indonesia")
-                                .placeOfBirth("Jakarta")
-                                .dateOfBirth(LocalDate.of(1990, 1, 1))
-                                .gender(Gender.MALE)
-                                .phone("08123456789")
-                                .nationality("Indonesia")
-                                .build();
+                ProfileRequest profileRequest = createValidProfileRequest();
 
                 // Create duplicate user manually
                 userRepository.save(User.builder().username("newuser").password("pwd").role(Role.USER).build());

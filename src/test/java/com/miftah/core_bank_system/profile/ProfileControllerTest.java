@@ -82,9 +82,8 @@ public class ProfileControllerTest {
                 token = tokenResponse.getToken();
         }
 
-        @Test
-        void create_Success_ShouldReturnCreated() throws Exception {
-                ProfileRequest request = ProfileRequest.builder()
+        private ProfileRequest createValidProfileRequest() {
+                return ProfileRequest.builder()
                                 .type(ProfileType.KTP)
                                 .expiryDate(LocalDate.of(2026, 1, 1))
                                 .identityNumber("1234567890123456")
@@ -96,6 +95,19 @@ public class ProfileControllerTest {
                                 .phone("08123456789")
                                 .nationality("Indonesia")
                                 .build();
+        }
+
+        private void createProfile(ProfileRequest request) throws Exception {
+                mockMvc.perform(post("/api/profiles")
+                                .header("Authorization", "Bearer " + token)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isCreated());
+        }
+
+        @Test
+        void create_Success_ShouldReturnCreated() throws Exception {
+                ProfileRequest request = createValidProfileRequest();
 
                 mockMvc.perform(post("/api/profiles")
                                 .header("Authorization", "Bearer " + token)
@@ -109,25 +121,10 @@ public class ProfileControllerTest {
 
         @Test
         void create_DuplicateFields_ShouldReturnBadRequest() throws Exception {
-                ProfileRequest request = ProfileRequest.builder()
-                                .type(ProfileType.KTP)
-                                .expiryDate(LocalDate.of(2026, 1, 1))
-                                .identityNumber("1234567890123456")
-                                .name("John Doe")
-                                .country("Indonesia")
-                                .placeOfBirth("Jakarta")
-                                .dateOfBirth(LocalDate.of(1990, 1, 1))
-                                .gender(Gender.MALE)
-                                .phone("08123456789")
-                                .nationality("Indonesia")
-                                .build();
+                ProfileRequest request = createValidProfileRequest();
 
                 // Create first profile
-                mockMvc.perform(post("/api/profiles")
-                                .header("Authorization", "Bearer " + token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request)))
-                                .andExpect(status().isCreated());
+                createProfile(request);
 
                 // Create another user
                 RegisterRequest registerRequest2 = RegisterRequest.builder()
@@ -159,25 +156,10 @@ public class ProfileControllerTest {
 
         @Test
         void get_Success_ShouldReturnProfile() throws Exception {
-                ProfileRequest request = ProfileRequest.builder()
-                                .type(ProfileType.KTP)
-                                .expiryDate(LocalDate.of(2026, 1, 1))
-                                .identityNumber("1234567890123456")
-                                .name("John Doe")
-                                .country("Indonesia")
-                                .placeOfBirth("Jakarta")
-                                .dateOfBirth(LocalDate.of(1990, 1, 1))
-                                .gender(Gender.MALE)
-                                .phone("08123456789")
-                                .nationality("Indonesia")
-                                .build();
+                ProfileRequest request = createValidProfileRequest();
 
                 // Create profile first
-                mockMvc.perform(post("/api/profiles")
-                                .header("Authorization", "Bearer " + token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request)))
-                                .andExpect(status().isCreated());
+                createProfile(request);
 
                 mockMvc.perform(get("/api/profiles")
                                 .header("Authorization", "Bearer " + token))
@@ -196,25 +178,10 @@ public class ProfileControllerTest {
 
         @Test
         void update_Success_ShouldReturnUpdatedProfile() throws Exception {
-                ProfileRequest request = ProfileRequest.builder()
-                                .type(ProfileType.KTP)
-                                .expiryDate(LocalDate.of(2026, 1, 1))
-                                .identityNumber("1234567890123456")
-                                .name("John Doe")
-                                .country("Indonesia")
-                                .placeOfBirth("Jakarta")
-                                .dateOfBirth(LocalDate.of(1990, 1, 1))
-                                .gender(Gender.MALE)
-                                .phone("08123456789")
-                                .nationality("Indonesia")
-                                .build();
+                ProfileRequest request = createValidProfileRequest();
 
                 // Create profile first
-                mockMvc.perform(post("/api/profiles")
-                                .header("Authorization", "Bearer " + token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request)))
-                                .andExpect(status().isCreated());
+                createProfile(request);
 
                 // Update profile
                 request.setName("Jane Doe");
@@ -231,24 +198,9 @@ public class ProfileControllerTest {
         @Test
         void getAll_Success_ShouldReturnOk() throws Exception {
                 // Ensure at least one profile exists
-                ProfileRequest request = ProfileRequest.builder()
-                                .type(ProfileType.KTP)
-                                .expiryDate(LocalDate.of(2026, 1, 1))
-                                .identityNumber("1234567890123456")
-                                .name("John Doe")
-                                .country("Indonesia")
-                                .placeOfBirth("Jakarta")
-                                .dateOfBirth(LocalDate.of(1990, 1, 1))
-                                .gender(Gender.MALE)
-                                .phone("08123456789")
-                                .nationality("Indonesia")
-                                .build();
+                ProfileRequest request = createValidProfileRequest();
 
-                mockMvc.perform(post("/api/profiles")
-                                .header("Authorization", "Bearer " + token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request)))
-                                .andExpect(status().isCreated());
+                createProfile(request);
 
                 mockMvc.perform(get("/api/profiles/all")
                                 .header("Authorization", "Bearer " + token)
@@ -264,24 +216,9 @@ public class ProfileControllerTest {
 
         @Test
         void getById_Success_ShouldReturnOk() throws Exception {
-                ProfileRequest request = ProfileRequest.builder()
-                                .type(ProfileType.KTP)
-                                .expiryDate(LocalDate.of(2026, 1, 1))
-                                .identityNumber("1234567890123456")
-                                .name("John Doe")
-                                .country("Indonesia")
-                                .placeOfBirth("Jakarta")
-                                .dateOfBirth(LocalDate.of(1990, 1, 1))
-                                .gender(Gender.MALE)
-                                .phone("08123456789")
-                                .nationality("Indonesia")
-                                .build();
+                ProfileRequest request = createValidProfileRequest();
 
-                mockMvc.perform(post("/api/profiles")
-                                .header("Authorization", "Bearer " + token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request)))
-                                .andExpect(status().isCreated());
+                createProfile(request);
 
                 // Get the profile to find its ID (since we don't have it directly from the
                 // request)
