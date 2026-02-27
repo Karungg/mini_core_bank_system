@@ -27,12 +27,10 @@ public class TransactionServiceImpl implements TransactionService {
                 request.getToAccountId());
 
         Account fromAccount = accountRepository.findById(request.getFromAccountId())
-                .orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.transaction.account.notFound"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.transaction.account.notFound"));
 
         Account toAccount = accountRepository.findById(request.getToAccountId())
-                .orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.transaction.account.notFound"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.transaction.account.notFound"));
 
         // Secure transaction: Check if the fromAccount belongs to the authenticated
         // user
@@ -70,7 +68,6 @@ public class TransactionServiceImpl implements TransactionService {
         transactionRepository.save(transaction);
 
         log.info("Transaction created successfully with ID: {}", transaction.getId());
-
         return toTransactionResponse(transaction);
     }
 

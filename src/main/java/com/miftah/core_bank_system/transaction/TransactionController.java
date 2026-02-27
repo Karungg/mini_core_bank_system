@@ -29,10 +29,10 @@ public class TransactionController {
             @RequestBody @Valid TransactionRequest request) {
 
         TransactionResponse response = transactionService.createTransaction(user, request);
+        String message = messageSource.getMessage("success.create", null, LocaleContextHolder.getLocale());
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(WebResponse.success(HttpStatus.CREATED.value(),
-                        messageSource.getMessage("success.create", null, LocaleContextHolder.getLocale()),
-                        response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                WebResponse.success(HttpStatus.CREATED.value(), message, response)
+        );
     }
 }
