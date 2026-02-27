@@ -27,60 +27,57 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ProfileController {
 
-        private final ProfileService profileService;
-        private final MessageSource messageSource;
+    private final ProfileService profileService;
+    
+    private final MessageSource messageSource;
 
-        @GetMapping(path = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-        public ResponseEntity<WebResponse<Page<ProfileResponse>>> getAll(
-                        @PageableDefault(size = 10) Pageable pageable) {
-                Page<ProfileResponse> responses = profileService.getAll(pageable);
-                return ResponseEntity.status(HttpStatus.OK)
-                                .body(WebResponse.success(HttpStatus.OK.value(),
-                                                messageSource.getMessage("success.get", null,
-                                                                LocaleContextHolder.getLocale()),
-                                                responses));
-        }
+    @GetMapping(path = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<WebResponse<Page<ProfileResponse>>> getAll(@PageableDefault(size = 10) Pageable pageable) {
+        Page<ProfileResponse> responses = profileService.getAll(pageable);
+        String message = messageSource.getMessage("success.get", null, LocaleContextHolder.getLocale());
+        
+        return ResponseEntity.status(HttpStatus.OK).body(
+                WebResponse.success(HttpStatus.OK.value(), message, responses)
+        );
+    }
 
-        @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-        public ResponseEntity<WebResponse<ProfileResponse>> getById(
-                        @PathVariable("id") UUID id) {
-                ProfileResponse response = profileService.getById(id);
-                return ResponseEntity.status(HttpStatus.OK)
-                                .body(WebResponse.success(HttpStatus.OK.value(),
-                                                messageSource.getMessage("success.get", null,
-                                                                LocaleContextHolder.getLocale()),
-                                                response));
-        }
+    @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<WebResponse<ProfileResponse>> getById(@PathVariable("id") UUID id) {
+        ProfileResponse response = profileService.getById(id);
+        String message = messageSource.getMessage("success.get", null, LocaleContextHolder.getLocale());
+        
+        return ResponseEntity.status(HttpStatus.OK).body(
+                WebResponse.success(HttpStatus.OK.value(), message, response)
+        );
+    }
 
-        @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-        public ResponseEntity<WebResponse<ProfileResponse>> create(@AuthenticationPrincipal User user,
-                        @RequestBody @Valid ProfileRequest request) {
-                ProfileResponse response = profileService.create(user, request);
-                return ResponseEntity.status(HttpStatus.CREATED)
-                                .body(WebResponse.success(HttpStatus.CREATED.value(),
-                                                messageSource.getMessage("success.create", null,
-                                                                LocaleContextHolder.getLocale()),
-                                                response));
-        }
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<WebResponse<ProfileResponse>> create(@AuthenticationPrincipal User user, @RequestBody @Valid ProfileRequest request) {
+        ProfileResponse response = profileService.create(user, request);
+        String message = messageSource.getMessage("success.create", null, LocaleContextHolder.getLocale());
+        
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                WebResponse.success(HttpStatus.CREATED.value(), message, response)
+        );
+    }
 
-        @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-        public ResponseEntity<WebResponse<ProfileResponse>> get(@AuthenticationPrincipal User user) {
-                ProfileResponse response = profileService.get(user);
-                return ResponseEntity.status(HttpStatus.OK)
-                                .body(WebResponse.success(HttpStatus.OK.value(),
-                                                messageSource.getMessage("success.get", null,
-                                                                LocaleContextHolder.getLocale()),
-                                                response));
-        }
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<WebResponse<ProfileResponse>> get(@AuthenticationPrincipal User user) {
+        ProfileResponse response = profileService.get(user);
+        String message = messageSource.getMessage("success.get", null, LocaleContextHolder.getLocale());
+        
+        return ResponseEntity.status(HttpStatus.OK).body(
+                WebResponse.success(HttpStatus.OK.value(), message, response)
+        );
+    }
 
-        @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-        public ResponseEntity<WebResponse<ProfileResponse>> update(@AuthenticationPrincipal User user,
-                        @RequestBody @Valid ProfileRequest request) {
-                ProfileResponse response = profileService.update(user, request);
-                return ResponseEntity.status(HttpStatus.OK)
-                                .body(WebResponse.success(HttpStatus.OK.value(),
-                                                messageSource.getMessage("success.update", null,
-                                                                LocaleContextHolder.getLocale()),
-                                                response));
-        }
+    @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<WebResponse<ProfileResponse>> update(@AuthenticationPrincipal User user, @RequestBody @Valid ProfileRequest request) {
+        ProfileResponse response = profileService.update(user, request);
+        String message = messageSource.getMessage("success.update", null, LocaleContextHolder.getLocale());
+        
+        return ResponseEntity.status(HttpStatus.OK).body(
+                WebResponse.success(HttpStatus.OK.value(), message, response)
+        );
+    }
 }

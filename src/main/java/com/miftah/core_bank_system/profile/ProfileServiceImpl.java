@@ -23,6 +23,16 @@ public class ProfileServiceImpl implements ProfileService {
     private final ProfileRepository profileRepository;
 
     @Override
+    @Transactional(readOnly = true)
+    public ProfileResponse get(User user) {
+        log.info("Fetching profile for user: {}", user.getUsername());
+        
+        Profile profile = profileRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found"));
+        return toProfileResponse(profile);
+    }
+
+    @Override
     @Transactional
     public ProfileResponse create(User user, ProfileRequest request) {
         log.info("Creating profile for user: {}", user.getUsername());
@@ -73,15 +83,6 @@ public class ProfileServiceImpl implements ProfileService {
         profileRepository.save(profile);
         log.info("Profile created successfully for user: {}", user.getUsername());
 
-        return toProfileResponse(profile);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public ProfileResponse get(User user) {
-        log.info("Fetching profile for user: {}", user.getUsername());
-        Profile profile = profileRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found"));
         return toProfileResponse(profile);
     }
 
