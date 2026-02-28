@@ -18,6 +18,8 @@ public interface UserService {
 
     UserResponse createUserWithProfile(CreateUserWithProfileRequest request);
 
+    UserResponse updateUser(UUID id, UpdateUserRequest request);
+
     UserResponse updateAdmin(UUID id, UpdateUserRequest request);
 
     void deleteAdmin(UUID id);

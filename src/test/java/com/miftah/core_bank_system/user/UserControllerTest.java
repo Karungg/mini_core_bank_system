@@ -203,6 +203,28 @@ public class UserControllerTest {
         }
 
         @Test
+        void updateUser_Success_ShouldReturnOk() throws Exception {
+                User user = userRepository
+                                .save(User.builder().username("olduser").password("password").role(Role.USER).build());
+
+                UpdateUserRequest request = UpdateUserRequest.builder()
+                                .username("newusername")
+                                .password("newpassword")
+                                .build();
+
+                mockMvc.perform(put("/api/users/" + user.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.code", is(200)))
+                                .andExpect(jsonPath("$.message", is(getMessage("success.update"))))
+                                .andExpect(jsonPath("$.data.username", is("newusername")));
+
+                User updatedUser = userRepository.findById(user.getId()).orElseThrow();
+                assertTrue(updatedUser.getUsername().equals("newusername"));
+        }
+
+        @Test
         void updateAdmin_Success_ShouldReturnOk() throws Exception {
                 User admin = userRepository
                                 .save(User.builder().username("admin").password("password").role(Role.ADMIN).build());

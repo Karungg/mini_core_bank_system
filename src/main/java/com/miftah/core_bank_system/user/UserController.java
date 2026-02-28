@@ -81,6 +81,16 @@ public class UserController {
         );
     }
 
+    @PutMapping(path = "/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<WebResponse<UserResponse>> updateUser(@PathVariable("userId") UUID userId, @RequestBody @Valid UpdateUserRequest request) {
+        UserResponse response = userService.updateUser(userId, request);
+        String message = messageSource.getMessage("success.update", null, LocaleContextHolder.getLocale());
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+                WebResponse.success(HttpStatus.OK.value(), message, response)
+        );
+    }
+
     @PutMapping(path = "/admin/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<WebResponse<UserResponse>> updateAdmin(@PathVariable("userId") UUID userId, @RequestBody @Valid UpdateUserRequest request) {
         UserResponse response = userService.updateAdmin(userId, request);

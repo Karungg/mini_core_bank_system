@@ -113,6 +113,32 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    public UserResponse updateUser(UUID id, UpdateUserRequest request) {
+        log.info("Updating user: {}", id);
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        if (userRepository.existsByUsernameAndIdNot(request.getUsername(), id)) {
+            log.warn("Username already exists: {}", request.getUsername());
+            throw new DuplicateResourceException("username", "error.username.duplicate");
+        }
+
+        user.setUsername(request.getUsername());
+
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        userRepository.save(user);
+
+        log.info("User updated successfully: {}", user.getId());
+
+        return toUserResponse(user);
+    }
+
+    @Override
+    @Transactional
     public UserResponse updateAdmin(UUID id, UpdateUserRequest request) {
         log.info("Updating admin user: {}", id);
 

@@ -158,6 +158,46 @@ class UserServiceTest {
     }
 
     @Test
+    void updateUser_Success() {
+        UUID userId = UUID.randomUUID();
+        User existingUser = User.builder().id(userId).username("olduser").role(Role.USER).build();
+        UpdateUserRequest updateRequest = UpdateUserRequest.builder().username("newusername").password("newpassword").build();
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+        when(userRepository.existsByUsernameAndIdNot(updateRequest.getUsername(), userId)).thenReturn(false);
+        when(passwordEncoder.encode("newpassword")).thenReturn("encodedPassword");
+
+        UserResponse response = userService.updateUser(userId, updateRequest);
+
+        assertNotNull(response);
+        assertEquals(updateRequest.getUsername(), response.getUsername());
+        verify(userRepository).save(any(User.class));
+    }
+
+    @Test
+    void updateUser_UserNotFound_ThrowsException() {
+        UUID userId = UUID.randomUUID();
+        UpdateUserRequest updateRequest = UpdateUserRequest.builder().username("newusername").build();
+
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThrows(ResponseStatusException.class, () -> userService.updateUser(userId, updateRequest));
+    }
+
+    @Test
+    void updateUser_DuplicateUsername_ThrowsException() {
+        UUID userId = UUID.randomUUID();
+        User existingUser = User.builder().id(userId).username("olduser").role(Role.USER).build();
+        UpdateUserRequest updateRequest = UpdateUserRequest.builder().username("newusername").build();
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+        when(userRepository.existsByUsernameAndIdNot(updateRequest.getUsername(), userId)).thenReturn(true);
+
+        assertThrows(DuplicateResourceException.class, () -> userService.updateUser(userId, updateRequest));
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
     void updateAdmin_Success() {
         UUID userId = UUID.randomUUID();
         User existingUser = User.builder().id(userId).username("olduser").role(Role.ADMIN).build();
