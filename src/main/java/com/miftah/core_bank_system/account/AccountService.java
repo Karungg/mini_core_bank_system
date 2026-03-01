@@ -10,6 +10,8 @@ public interface AccountService {
 
     AccountResponse getById(UUID id);
 
+    AccountResponse getByUsername(String username);
+
     Page<AccountResponse> getAll(Pageable pageable);
 
     AccountResponse update(UUID id, AccountRequest request);

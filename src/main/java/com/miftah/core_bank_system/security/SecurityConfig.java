@@ -24,6 +24,10 @@ public class SecurityConfig {
                         "/v3/api-docs/**",
         };
 
+        private static final String[] USER_WHITELIST = {
+                "/api/accounts/me"
+        };
+
         public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, AuthenticationProvider authenticationProvider) {
                 this.jwtAuthFilter = jwtAuthFilter;
                 this.authenticationProvider = authenticationProvider;
@@ -34,8 +38,16 @@ public class SecurityConfig {
                 http
                                 .csrf(AbstractHttpConfigurer::disable)
                                 .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers("/api/auth/**").permitAll()
                                                 .requestMatchers(SWAGGER_WHITELIST).permitAll()
+
+                                                .requestMatchers("/api/auth/**").permitAll()
+                                                .requestMatchers("/api/users/**").hasRole("ADMIN")
+                                                .requestMatchers("/api/profiles/**").hasRole("ADMIN")
+
+                                                .requestMatchers(USER_WHITELIST).hasRole("USER")
+                                                
+                                                .requestMatchers("/api/accounts/**").hasRole("ADMIN")
+                                                .requestMatchers("/api/transactions/**").hasAnyRole("ADMIN, USER")
                                                 .anyRequest().authenticated())
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -4,7 +4,6 @@ import com.miftah.core_bank_system.TestcontainersConfiguration;
 import com.miftah.core_bank_system.auth.AuthService;
 import com.miftah.core_bank_system.auth.LoginRequest;
 import com.miftah.core_bank_system.auth.RegisterRequest;
-import com.miftah.core_bank_system.auth.TokenResponse;
 import com.miftah.core_bank_system.user.User;
 import com.miftah.core_bank_system.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +14,9 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
+
 import java.util.Locale;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -31,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
+@WithMockUser(username = "admin", roles = "ADMIN")
 public class AccountControllerTest {
 
         @Autowired
@@ -55,8 +58,8 @@ public class AccountControllerTest {
                 return messageSource.getMessage(code, null, Locale.getDefault());
         }
 
-        private String token;
         private User user;
+        private String token;
 
         @BeforeEach
         void setUp() {
@@ -70,12 +73,6 @@ public class AccountControllerTest {
                 authService.register(registerRequest);
 
                 user = userRepository.findByUsername("testuser").orElseThrow();
-
-                TokenResponse tokenResponse = authService.login(LoginRequest.builder()
-                                .username("testuser")
-                                .password("password")
-                                .build());
-                token = tokenResponse.getToken();
         }
 
         @Test
@@ -89,7 +86,6 @@ public class AccountControllerTest {
                 String expectedMessage = getMessage("success.create");
 
                 mockMvc.perform(post("/api/accounts")
-                                .header("Authorization", "Bearer " + token)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                         .andExpect(status().isCreated())
@@ -108,7 +104,6 @@ public class AccountControllerTest {
                 String expectedMessage = getMessage("error.validation");
 
                 mockMvc.perform(post("/api/accounts")
-                                .header("Authorization", "Bearer " + token)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                         .andExpect(status().isBadRequest())
@@ -121,7 +116,7 @@ public class AccountControllerTest {
                                 .user(user)
                                 .accountNumber("1234567890")
                                 .balance(new BigDecimal("1000.00"))
-                                .pin("encoded_pin")
+                                .pin("123456")
                                 .cardNumber("1234-5678-9012-3456")
                                 .cvv("123")
                                 .type(AccountType.SILVER)
@@ -135,8 +130,7 @@ public class AccountControllerTest {
 
                 String expectedMessage = getMessage("success.get");
 
-                mockMvc.perform(get("/api/accounts/" + account.getId())
-                                .header("Authorization", "Bearer " + token))
+                mockMvc.perform(get("/api/accounts/" + account.getId()))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.code").value(200))
                         .andExpect(jsonPath("$.message").value(expectedMessage))
@@ -149,12 +143,26 @@ public class AccountControllerTest {
 
                 String expectedMessage = getMessage("success.get");
 
-                mockMvc.perform(get("/api/accounts")
-                                .header("Authorization", "Bearer " + token))
+                mockMvc.perform(get("/api/accounts"))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.code").value(200))
                         .andExpect(jsonPath("$.message").value(expectedMessage))
                         .andExpect(jsonPath("$.data.content", hasSize(1)));
+        }
+
+        @Test
+        @WithMockUser(username = "testuser", roles = "USER")
+        void getMe_success() throws Exception {
+                Account account = accountRepository.save(createTestAccount());
+
+                String expectedMessage = getMessage("success.get");
+
+                mockMvc.perform(get("/api/accounts/me"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.code").value(200))
+                        .andExpect(jsonPath("$.message").value(expectedMessage))
+                        .andExpect(jsonPath("$.data.id").value(account.getId().toString()))
+                        .andExpect(jsonPath("$.data.userId").value(user.getId().toString()));
         }
 
         @Test
@@ -170,7 +178,6 @@ public class AccountControllerTest {
                 String expectedMessage = getMessage("success.update");
 
                 mockMvc.perform(put("/api/accounts/" + account.getId())
-                                .header("Authorization", "Bearer " + token)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(updateRequest)))
                         .andExpect(status().isOk())
@@ -186,14 +193,12 @@ public class AccountControllerTest {
 
                 String expectedMessage = getMessage("success.delete");
 
-                mockMvc.perform(delete("/api/accounts/" + account.getId())
-                                .header("Authorization", "Bearer " + token))
+                mockMvc.perform(delete("/api/accounts/" + account.getId()))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.code").value(200))
                         .andExpect(jsonPath("$.message").value(expectedMessage));
 
-                mockMvc.perform(get("/api/accounts/" + account.getId())
-                                .header("Authorization", "Bearer " + token))
+                mockMvc.perform(get("/api/accounts/" + account.getId()))
                         .andExpect(status().isNotFound());
         }
 }

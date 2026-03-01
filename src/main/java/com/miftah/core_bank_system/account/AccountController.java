@@ -11,6 +11,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -41,6 +43,17 @@ public class AccountController {
         
         return ResponseEntity.status(HttpStatus.OK).body(
                 WebResponse.success(HttpStatus.OK.value(), message, responses)
+        );
+    }
+
+    @GetMapping(path = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<WebResponse<AccountResponse>> getMe(@AuthenticationPrincipal UserDetails userDetails) {
+        AccountResponse response = accountService.getByUsername(userDetails.getUsername());
+
+        String message = messageSource.getMessage("success.get", null, LocaleContextHolder.getLocale());
+        
+        return ResponseEntity.status(HttpStatus.OK).body(
+            WebResponse.success(HttpStatus.OK.value(), message, response)
         );
     }
 

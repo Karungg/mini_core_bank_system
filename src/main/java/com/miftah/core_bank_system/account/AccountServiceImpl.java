@@ -2,6 +2,8 @@ package com.miftah.core_bank_system.account;
 
 import com.miftah.core_bank_system.user.User;
 import com.miftah.core_bank_system.user.UserRepository;
+import com.miftah.core_bank_system.user.UserService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -44,6 +46,19 @@ public class AccountServiceImpl implements AccountService {
         log.info("Fetching all accounts with pageable: {}", pageable);
         return accountRepository.findAll(pageable)
                 .map(this::toResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AccountResponse getByUsername(String username) {
+        log.info("fetching account by username: {}", username);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+            
+        Account account = accountRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
+
+        return toResponse(account);
     }
 
     @Override
